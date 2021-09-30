@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/plugins/tools_jas" >
+        <file>icon.png</file>
+    </qresource>
+</RCC>
