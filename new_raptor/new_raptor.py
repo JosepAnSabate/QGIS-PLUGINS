@@ -23,13 +23,15 @@
 """
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QDate
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction,  QMessageBox
+from qgis.PyQt.QtWidgets import QAction,  QMessageBox, QTableWidgetItem
 
 from qgis.core import QgsProject, QgsFeature, QgsGeometry, QgsPoint
 # Initialize Qt resources from file resources.py
 from .resources import *
+
 # Import the code for the dialog
 from .new_raptor_dialog import NewRaptorDialog
+from .impact_table import DlgTable
 import os.path
 
 
@@ -208,6 +210,8 @@ class NewRaptor:
             missing_layers.append("Raptor Nests")
         if not "Raptor Buffer" in map_layers:
             missing_layers.append("Raptor Buffer")
+        if not "Linear Buffer" in map_layers:
+            missing_layers.append("Linear Buffer")
         if missing_layers:
             msg = "The following layers are missing from this project\n"
             for lyr in missing_layers:
@@ -229,6 +233,7 @@ class NewRaptor:
             QMessageBox.information(self.dlg, "Message", "Should only run if OK button is clicked")
             lyrNests = QgsProject.instance().mapLayersByName("Raptor Nests")[0]
             lyrBuffer = QgsProject.instance().mapLayersByName("Raptor Buffer")[0]
+            lyrLinear  = QgsProject.instance().mapLayersByName("Linear Buffer")[0]
             idxNestID = lyrNests.fields().indexOf("Nest_ID")
             valNestID = lyrNests.maximumValue(idxNestID) +1
             valLat = self.dlg.spbLatitude.value()
@@ -258,6 +263,28 @@ class NewRaptor:
             ftrNest.setGeometry(buffer)
             pr.addFeatures([ftrNest])
             lyrBuffer.reload()
+
+            dlgTable = DlgTable()
+            dlgTable.setWindowTitle("Impacts Table for Nest {}".format(valNestID))
+            # Find linear projects that will be impacted and report them  in the table
+            # intersects
+            bb = buffer.boundingBox() # bc we want check instersect only inside boundingbox not all map
+            linears = lyrLinear.getFeatures(bb) # bb bounding box rectangle
+            for linear in linears:
+                valID = linear.attribute("Project")
+                valType = linear.attribute("type")
+                valDistance = linear.geometry().distance(geom)
+                if valDistance < valBuffer:
+                    # Populate table with linear data
+                    row = dlgTable.tableimpacts.rowCount()
+                    dlgTable.tableimpacts.insertRow(row)
+                    dlgTable.tableimpacts.setItem(row, 0, QTableWidgetItem(str(valID)))
+                    dlgTable.tableimpacts.setItem(row, 1, QTableWidgetItem(valType))
+                    dlgTable.tableimpacts.setItem(row, 2, QTableWidgetItem("{:4.5f}".format(valDistance))) # 5 decimals
+
+
+            dlgTable.show()
+            dlgTable.exec_()
 
         else:
             QMessageBox.information(self.dlg, "Message", "Should only run if cancelled")
