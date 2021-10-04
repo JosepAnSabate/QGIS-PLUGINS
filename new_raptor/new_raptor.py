@@ -21,10 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, QDate
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QAction,  QMessageBox
 
+from qgis.core import QgsProject, QgsFeature, QgsGeometry, QgsPoint
 # Initialize Qt resources from file resources.py
 from .resources import *
 # Import the code for the dialog
@@ -188,10 +189,34 @@ class NewRaptor:
         if self.first_start == True:
             self.first_start = False
             self.dlg = NewRaptorDialog()
-            QMessageBox.information(self.dlg, "Message", "Should only run once")
+            self.dlg.cmbSpecies.currentTextChanged.connect(self.evt_cmbSpecies_changed)
             # self.dlg en comptes de self pk ens referim a dialog no a la classe NewRaptor
 
-        QMessageBox.information(self.dlg, "Message", "Should run every time")
+        # QMessageBox.information(self.dlg, "Message", "Should run every time")
+        mc = self.iface.mapCanvas()
+        self.dlg.spbLatitude.setValue(mc.center().y())
+        self.dlg.spbLongitude.setValue(mc.center().x())
+        self.dlg.dteLast.setDate(QDate.currentDate())
+
+        # input
+        map_layers = []
+        for lyr in mc.layers():
+            map_layers.append(lyr.name())
+        #QMessageBox.information(self.dlg, "Layers", str(map_layers))
+        missing_layers = []
+        if not "Raptor Nests" in map_layers:
+            missing_layers.append("Raptor Nests")
+        if not "Raptor Buffer" in map_layers:
+            missing_layers.append("Raptor Buffer")
+        if missing_layers:
+            msg = "The following layers are missing from this project\n"
+            for lyr in missing_layers:
+                msg += "\n{}".format(lyr)
+            QMessageBox.critical(self.dlg, "Missing layers", msg)
+            return # return stop the executing if there are missing layers
+
+
+
 
         # show the dialog
         self.dlg.show()
@@ -202,5 +227,43 @@ class NewRaptor:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             QMessageBox.information(self.dlg, "Message", "Should only run if OK button is clicked")
+            lyrNests = QgsProject.instance().mapLayersByName("Raptor Nests")[0]
+            lyrBuffer = QgsProject.instance().mapLayersByName("Raptor Buffer")[0]
+            idxNestID = lyrNests.fields().indexOf("Nest_ID")
+            valNestID = lyrNests.maximumValue(idxNestID) +1
+            valLat = self.dlg.spbLatitude.value()
+            valLng = self.dlg.spbLongitude.value()
+            valSpecies = self.dlg.cmbSpecies.currentText()  # cmb from combobox
+            valBuffer = self.dlg.spbBuffer.value()
+            valStatus = self.dlg.cmbStatus.currentText()
+            valLast = self.dlg.dteLast.date()
+            QMessageBox.information(self.dlg, "Message", "New Nest ID: {}\n\n Latitude: {}\nLongitude: {}\nSpecies: {}\nBuffer: {}\nStatus: {}\n Last Survey: {}".format(valNestID,valLat, valLng, valSpecies, valBuffer, valStatus, valLast))
+            # creating a feature with attributes and geometries
+            ftrNest = QgsFeature(lyrNests.fields())
+            ftrNest.setAttribute("lat_y_dd", valLat)
+            ftrNest.setAttribute("long_x_dd", valLng)
+            ftrNest.setAttribute("recentspec", valSpecies)
+            ftrNest.setAttribute("buf_dist", valBuffer)
+            ftrNest.setAttribute("recentstat", valStatus)
+            ftrNest.setAttribute("lastsurvey", valLast)
+            ftrNest.setAttribute("Nest_ID", valNestID)
+            geom = QgsGeometry(QgsPoint(valLng, valLat))
+            ftrNest.setGeometry(geom)
+            pr = lyrNests.dataProvider()
+            pr.addFeatures([ftrNest])
+            lyrNests.reload()
+
+            pr = lyrBuffer.dataProvider()
+            buffer = geom.buffer(valBuffer, 10)
+            ftrNest.setGeometry(buffer)
+            pr.addFeatures([ftrNest])
+            lyrBuffer.reload()
+
         else:
             QMessageBox.information(self.dlg, "Message", "Should only run if cancelled")
+
+    def evt_cmbSpecies_changed(self, species):
+        if species == "Swainsons Hawk":
+            self.dlg.spbBuffer.setValue(0.004)
+        else:
+            self.dlg.spbBuffer.setValue(0.008)
