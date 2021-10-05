@@ -1,10 +1,10 @@
 Plugin Builder Results
 
-Your plugin example was created in:
-    /home/josep/wa/plugin-qgis/example
+Your plugin PipelinePlanner was created in:
+    C:\OSGeo4W64\apps\qgis\python\plugins\pipeline_planner
 
 Your QGIS plugin directory is located at:
-    /home/josep/.local/share/QGIS/QGIS3/profiles/default/python/plugins
+    C:/Users/34639/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins
 
 What's Next:
 
@@ -17,11 +17,11 @@ What's Next:
 
   * Test the plugin by enabling it in the QGIS plugin manager
 
-  * Customize it by editing the implementation file: ``example.py``
+  * Customize it by editing the implementation file: ``pipeline_planner.py``
 
   * Create your own custom icon, replacing the default icon.png
 
-  * Modify your user interface by opening example_dialog_base.ui in Qt Designer
+  * Modify your user interface by opening PipelinePlanner_dialog_base.ui in Qt Designer
 
   * You can use the Makefile to compile your Ui and resource files when
     you make changes. This requires GNU make (gmake)
