@@ -30,7 +30,7 @@ Species Evenness
 
 Species Evenness (J') is a measure of how evenly distributed the number of observations for each species are.  It provides a critical second element of biodiversity that is not encapsulated in species richness.  Most other diversity indices are attempts at providing a single number that reflects both species richness and species evenness, but there is a specific definition for evenness.
 
-.. image:: images/evenness.png
+.. image:: images/evenness.PNG
 
 Where H' is the Shannons diversity index.  Evenness is therefore the proportion of the measured Shannons diversity, relative to the maximum possible value for Shannon's diversity given the species richness (the natural logarithm of richness [ln R]).
 
