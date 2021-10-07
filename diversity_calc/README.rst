@@ -44,7 +44,7 @@ Shannons Diversity Index (H') has its roots deep in information theory. It is an
 
 Shannons diversity index (H') is calculated according to the following formula:
 
-.. image:: images/shannons.png
+.. image:: images/shannons.PNG
 
 where *p*\ :sub:`i` is the proportion of the total observations for each species.
 
@@ -54,7 +54,7 @@ Simpsons Diversity Index
 
 Simpsons Diversity Index (D) is very similar to Shannons Diversity Index.  It is calculated according to the following formula:
 
-.. image:: images/simpsons.png
+.. image:: images/simpsons.PNG
 
 where *p*\ :sub:`i` is the proportion of the total observations for each species.
 
@@ -76,7 +76,7 @@ Next choose the layer containing the species **occurrance points** and the **fie
 
 Click OK and you will see a table similar to this:
 
-.. image:: images/results_table.png
+.. image:: images/results_table.PNG
 
 
 .. toctree::
