@@ -64,7 +64,20 @@ The Inverse Simpsons index is equal to 1 / D . It has a maximum value that is eq
 
 The Gini-Simpson index is equal to 1 - D . It can be interpreted as the probabiility that any two independent observations will be different species.
 
- 
+Using the plugin
+=================
+To use this plugin simply go to the Qgis plugin manager and install it on your system just like any other QGIS plugin. You will see a toolbutton in the plugin tooblar with a fox image.
+
+.. index:: polygon layer
+Choose the layer that you want to use as the **polygon layer** and the field that defines the **category**.
+
+.. index:: point layer
+Next choose the layer containing the species **occurrance points** and the **field** that contains the **name of the species** observed at that point.
+
+Click OK and you will see a table similar to this:
+
+.. image:: images/results_table.png
+
 
 .. toctree::
    :maxdepth: 2
