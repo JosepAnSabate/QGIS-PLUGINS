@@ -159,7 +159,7 @@ def dc_resultString(dict):
         result += "{}: {} {:2.3f} {:2.3f} {:2.3f}\n".format(category, dc_richness(summary), dc_shannons(summary), dc_simpsons(summary), dc_evenness(summary))
     return result
 
-def dc_resultHTML(dict, sLayer, sCategory):
+def dc_resultHTML(dict, sLayer, sCategory, bDetail=True):
     html = """
     <!DOCTYPE html>
     <html>
@@ -191,9 +191,28 @@ def dc_resultHTML(dict, sLayer, sCategory):
 
     html += """
             </table>
+            """
+    if bDetail:
+        html += """
+        <h2>Raw Data</h2>
+        <table>
+            <tr>
+                <th> Name </th><th> Species </th><th> Observations </th>
+            <tr>
+        """
+        for category in sorted(dict.keys()):
+            for species, obs in dict[category].items():
+                html += "       <tr>\n"
+                html += "   <td>" + category + "</td>"
+                html += "<td>" + species + "</td>"
+                html += "<td>"+ str(obs) + "</td>\n"
+                html += "       </tr>\n"
+        html += """
+        </table> """
+        html += """
         </body>
     </html>
-            """
+    """
 
     return html
 

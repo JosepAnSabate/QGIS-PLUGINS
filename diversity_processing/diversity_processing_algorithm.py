@@ -38,10 +38,11 @@ from qgis.core import (QgsProcessing,
                        QgsProcessingParameterFeatureSource,
                        QgsProcessingParameterField,
                        QgsProcessingParameterFileDestination,
+                       QgsProcessingParameterBoolean,
                        QgsProcessingOutputString)
 
 from .diversity_functions import *
-
+import time, webbrowser
 
 class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
     """
@@ -69,6 +70,7 @@ class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
     SPECIESFIELD = "SPECIESFIELD"
     SUMMARY_DICTIONARY = "SUMMARY_DICTIONARY"
     SUMMARY_HTML = "SUMMARY_HTML"
+    DETAIL = " DETAIL"
 
 
 
@@ -123,6 +125,14 @@ class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
         )
 
         self.addParameter(
+            QgsProcessingParameterBoolean(
+               self.DETAIL,
+                self.tr("Include raw data"),
+                True  # default value true
+            )
+        )
+
+        self.addParameter(
             QgsProcessingParameterFileDestination(
                 self.SUMMARY_HTML,
                 self.tr("Output HTML File"),
@@ -136,6 +146,8 @@ class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
                 self.tr("Results (string)")
             )
         )
+
+
 
     def processAlgorithm(self, parameters, context, feedback):
         """
@@ -153,6 +165,11 @@ class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
         fldSpecies = self.parameterAsString(parameters, self.SPECIESFIELD, context)
 
         outFile = self.parameterAsFileOutput(parameters, self.SUMMARY_HTML, context)
+        bDetail = self.parameterAsBoolean(parameters, self.DETAIL, context)
+
+        total = lyrPoly.featureCount()
+        current = 0
+
 
         dctMain = {}
         # loop through poly features
@@ -172,12 +189,19 @@ class DiversityProcessingAlgorithm(QgsProcessingAlgorithm):
             # call dc_mergeDictionaries in diversity_functions.py to merge summary dictionary into the main results
             dctMain = dc_mergeDictionaries(dctMain, sCategory, dctSummary)
 
+            current += 1
+            feedback.setProgress(current/total*100)
+            feedback.setProgressText("Currently on polygon {} out of {}".format(current, total))
+            time.sleep(0.5)
+
         feedback.pushInfo(str(dctMain))
 
         if not feedback.isCanceled():
             f = open(outFile, "w")  # f = file w = write mode
-            f.write(dc_resultHTML(dctMain, lyrPoly.sourceName(), fldCategory))
+            f.write(dc_resultHTML(dctMain, lyrPoly.sourceName(), fldCategory, bDetail))
             f.close() # close file
+            # open directly the table on browser
+            webbrowser.open("file://{}".format(outFile))
 
         # return values as a dictionary
         return {self.SUMMARY_DICTIONARY: str(dctMain),
